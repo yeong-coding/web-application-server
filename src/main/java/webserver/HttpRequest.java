@@ -2,6 +2,8 @@ package webserver;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.HttpRequestUtils;
+import util.IOUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,98 +11,62 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 public class HttpRequest {
 
     private static final Logger log = LoggerFactory.getLogger(HttpRequest.class);
 
-    private String method;
-    private String path;
-    private Map<String, String> header;
-    private Map<String, String> parameter;
+    private Map<String, String> header=new HashMap<String, String>();
+    private Map<String, String> params=new HashMap<String, String>();
+    private RequestLine requestLine;
 
-    public HttpRequest(InputStream in) throws IOException {
 
-        BufferedReader br=new BufferedReader(new InputStreamReader(in));
-        String line=br.readLine();
-        log.info("line: {}", line);
-        String[] tokens=line.split(" ");
+    public HttpRequest(InputStream in) {
 
-        if("GET".equals(tokens[0])){
-            method=tokens[0];
-            int idx=tokens[1].indexOf("?");
-            path=tokens[1].substring(0, idx);
-            parseParameter(tokens[1].substring(idx+1));
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+            String line = br.readLine();
+            log.debug("line: {}", line);
 
-            while(true){
-                line=br.readLine();
-                if(line==null || line.isBlank()) {
-                    in.close();
-                    br.close();
-                    return;
-                }
-                parseHeader(line);
+            if (line == null) return;
+
+            requestLine=new RequestLine(line);
+
+            line = br.readLine();
+
+            while (line!=null && !line.equals("")) {
+                log.debug("header: {}", line);
+                String[] tokens = line.split(":");
+                header.put(tokens[0].trim(), tokens[1].trim());
+                line = br.readLine();
             }
 
-        }
-
-        if("POST".equals(tokens[0])){
-            method=tokens[0];
-            path=tokens[1];
-
-            while(true){
-                line=br.readLine();
-                if(line.isBlank()) {
-                    break;
-                }
-                parseHeader(line);
+            if (getMethod().isPost()) {
+                String body = IOUtils.readData(br, Integer.parseInt(header.get("Content-Length")));
+                log.debug("body: {}", body);
+                params = HttpRequestUtils.parseQueryString(body);
             }
-
-            line=br.readLine();
-            parseParameter(line);
-
-        }
-
-        in.close();
-        br.close();
-
-
-
-    }
-
-    public void parseHeader(String line) throws IOException {
-
-        if(header==null){
-            header=new HashMap<String, String>();
-        }
-
-        String[] params=line.split(": ");
-        header.put(params[0], params[1]);
-
-    }
-
-    public void parseParameter(String line){
-
-        if(parameter==null){
-            parameter=new HashMap<String, String>();
-        }
-
-        String[] params=line.split("&|=");
-
-        for(int i=0; i<params.length; i+=2){
-            log.info("params: {}, {}", params[i], params[i+1]);
-            parameter.put(params[i], params[i+1]);
+            else {
+                params=requestLine.getParams();
+            }
+        } catch (IOException io){
+            log.debug(io.getMessage());
         }
 
     }
 
-    public String getMethod(){
-        return method;
+    public HttpMethod getMethod(){
+        return requestLine.getMethod();
     }
 
     public String getPath(){
-        return path;
+        return requestLine.getPath();
+    }
+
+    public Map<String, String> getHeader(){
+        return header;
     }
 
     public String getHeader(String key){
@@ -108,7 +74,7 @@ public class HttpRequest {
     }
 
     public String getParameter(String key){
-        return parameter.get(key);
+        return params.get(key);
     }
 
 }

@@ -85,7 +85,7 @@
                 </tr>
               </thead>
               <tbody>
-                <c:forEach items="users" var="user" varStatus="status">
+                <c:forEach items="user" var="user" varStatus="status">
                     <tr>
                         <th scope="row">${status.count}</th>
                         <td>${user.userId}</td>

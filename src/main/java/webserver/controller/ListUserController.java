@@ -2,35 +2,39 @@ package webserver.controller;
 
 import db.DataBase;
 import model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import webserver.http.HttpRequest;
 import webserver.http.HttpResponse;
+import webserver.http.HttpSession;
 
+import javax.servlet.RequestDispatcher;
+import javax.servlet.annotation.WebServlet;
 import java.io.IOException;
 import java.util.Collection;
 
+//@WebServlet("/user/list")
 public class ListUserController extends AbstratController {
+
+    private static final Logger log=LoggerFactory.getLogger(ListUserController.class);
 
     @Override
     public void doGet(HttpRequest request, HttpResponse response) throws IOException {
 
-        if(!request.getHeader("Cookie").contains("logined=true;")){
-            response.sendRedirect("/user/login.html");
+        if(isLogin(request.getSession())){
+
+            response.forward("/user/list.jsp");
             return;
         }
 
-        Collection<User> users= DataBase.findAll();
-        StringBuilder sb=new StringBuilder();
-        sb.append("<table border='1'>");
+        response.forward("/user/login.html");
+    }
 
-        for(User user: users){
-            sb.append("<tr>");
-            sb.append("<td>"+user.getUserId()+"</td>");
-            sb.append("<td>"+user.getName()+"</td>");
-            sb.append("<td>"+user.getEmail()+"</td>");
-            sb.append("</tr>");
+    public boolean isLogin(HttpSession session){
+        Object user=session.getAttribute("user");
+        if(user==null){
+            return false;
         }
-
-        sb.append("</table>");
-        response.forwardBody(sb.toString());
+        return true;
     }
 }

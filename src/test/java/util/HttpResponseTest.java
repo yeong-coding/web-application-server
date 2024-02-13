@@ -1,7 +1,7 @@
 package util;
 
 import org.junit.Test;
-import webserver.controller.HttpResponse;
+import webserver.http.HttpResponse;
 
 import java.io.File;
 import java.io.FileNotFoundException;

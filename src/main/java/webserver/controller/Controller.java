@@ -1,6 +1,7 @@
 package webserver.controller;
 
-import webserver.HttpRequest;
+import webserver.http.HttpRequest;
+import webserver.http.HttpResponse;
 
 import java.io.IOException;
 

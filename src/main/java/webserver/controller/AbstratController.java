@@ -1,11 +1,10 @@
 package webserver.controller;
 
-import webserver.HttpMethod;
-import webserver.HttpRequest;
+import webserver.http.HttpMethod;
+import webserver.http.HttpRequest;
+import webserver.http.HttpResponse;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 public class AbstratController implements Controller {
 

@@ -2,7 +2,8 @@ package webserver.controller;
 
 import db.DataBase;
 import model.User;
-import webserver.HttpRequest;
+import webserver.http.HttpRequest;
+import webserver.http.HttpResponse;
 
 import java.io.IOException;
 import java.util.Collection;

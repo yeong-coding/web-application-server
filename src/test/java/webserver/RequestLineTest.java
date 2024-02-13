@@ -1,6 +1,9 @@
 package webserver;
 
 import org.junit.Test;
+import webserver.http.HttpMethod;
+import webserver.http.RequestLine;
+
 import static junit.framework.TestCase.assertEquals;
 
 public class RequestLineTest {
